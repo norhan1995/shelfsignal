@@ -45,3 +45,8 @@ Then open http://localhost:4173.
 ## Out of scope
 
 ShelfSignal is a decision-surface prototype, not a live purchasing system. It does not connect to a pharmacy ERP, send supplier orders, make clinical recommendations, or claim the synthetic inventory overlay came from the UCI file.
+
+## Author
+
+**Norhan Rifaie**  
+[Portfolio](https://norhan-rifaie-portfolio-t6s0kg.v2.appdeploy.ai/) · [GitHub](https://github.com/norhan1995)
