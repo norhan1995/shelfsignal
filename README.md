@@ -14,7 +14,7 @@ Open the live demo: **https://shelfsignal.nrifaie77.chatgpt.site**
 
 ## Run locally
 
-This is a dependency-free static build. Serve the `dist` directory with any static server:
+This is a dependency-free static application. The readable source lives in `src/index.html`, while `dist/index.html` is the deployable static artifact. Serve the `dist` directory with any static server:
 
 ```bash
 python3 -m http.server 4173 --directory dist
@@ -31,7 +31,8 @@ Then open http://localhost:4173.
 
 ## Repository map
 
-- `dist/index.html` — the complete responsive demo and local inference engine.
+- `src/index.html` — readable source for the responsive demo and local inference engine.
+- `dist/index.html` — deployable static artifact used by the live demo.
 - `data/online-retail-sample.csv` — small provenance-labelled sample from the UCI schema.
 - `docs/ARCHITECTURE.md` — data, inference, decision, and action contract.
 - `docs/COMPETITION.md` — public-pattern research and differentiation.
