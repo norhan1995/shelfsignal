@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0b111c" />
+    <meta name="description" content="ShelfSignal is an action-first AI interface for pharmacy replenishment decisions." />
+    <title>ShelfSignal — protect the next shelf</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230b111c'/%3E%3Cpath d='M17 32h19M34 20l13 12-13 12' fill='none' stroke='%23c8f56a' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+    <style>
+      :root {
+        --ink: #f1f5f8;
+        --muted: #8e9aaa;
+        --faint: #5d6878;
+        --line: rgba(157, 175, 197, 0.16);
+        --line-strong: rgba(157, 175, 197, 0.28);
+        --bg: #0b111c;
+        --panel: #101927;
+        --panel-2: #151f2f;
+        --lime: #c8f56a;
+        --cyan: #7ed7ff;
+        --orange: #ffad73;
+        --red: #ff7f88;
+        --green: #76e1a5;
+        --shadow: 0 22px 80px rgba(0, 0, 0, .34);
+        --radius: 22px;
+      }
+
+      * { box-sizing: border-box; }
+      html { background: var(--bg); }
+      body {
+        margin: 0;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 73% 8%, rgba(126, 215, 255, .08), transparent 27rem),
+          radial-gradient(circle at 8% 78%, rgba(200, 245, 106, .06), transparent 24rem),
+          var(--bg);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 16px;
+        line-height: 1.45;
+        min-height: 100vh;
+      }
+
+      button, textarea { font: inherit; }
+      button { cursor: pointer; }
+      button:focus-visible, textarea:focus-visible { outline: 2px solid var(--lime); outline-offset: 3px; }
+      .shell { width: min(1460px, calc(100% - 48px)); margin: 0 auto; padding: 28px 0 64px; }
+      .topbar { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 46px; }
+      .brand { display: flex; align-items: center; gap: 12px; letter-spacing: .18em; font-size: 13px; font-weight: 760; }
+      .brand-mark { width: 31px; height: 31px; display: grid; place-items: center; border: 1px solid rgba(200,245,106,.5); border-radius: 10px; color: var(--lime); font-size: 18px; transform: rotate(-10deg); }
+      .top-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
+      .eyebrow, .pill, .tiny-label { text-transform: uppercase; letter-spacing: .14em; font-size: 11px; font-weight: 760; }
+      .eyebrow { color: var(--muted); }
+      .pill { border: 1px solid var(--line); color: var(--muted); border-radius: 999px; padding: 8px 11px; background: rgba(255,255,255,.02); }
+      .pill.live { color: var(--lime); border-color: rgba(200,245,106,.35); }
+      .pill.live::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--lime); margin: 0 7px 1px 0; box-shadow: 0 0 0 4px rgba(200,245,106,.08); }
+
+      .intro { display: grid; grid-template-columns: 1.1fr .9fr; gap: 56px; align-items: end; margin-bottom: 30px; }
+      h1 { font-size: clamp(42px, 5.4vw, 76px); letter-spacing: -.065em; line-height: .95; margin: 10px 0 20px; max-width: 760px; font-weight: 730; }
+      h1 em { font-style: normal; color: var(--lime); }
+      .intro-copy { max-width: 600px; color: #b6c0cc; font-size: 18px; line-height: 1.55; margin: 0; }
+      .principle { justify-self: end; max-width: 390px; border-left: 2px solid var(--lime); padding: 2px 0 2px 18px; color: #c8d1da; }
+      .principle strong { display: block; color: var(--ink); font-size: 20px; letter-spacing: -.02em; margin-bottom: 8px; }
+      .principle span { color: var(--muted); font-size: 14px; }
+
+      .surface { display: grid; grid-template-columns: 214px minmax(0, 1fr) 315px; gap: 14px; align-items: stretch; }
+      .rail, .decision, .why, .replace, .architecture, .failure { border: 1px solid var(--line); background: rgba(16, 25, 39, .88); box-shadow: var(--shadow); }
+      .rail { border-radius: var(--radius); padding: 18px 14px; display: flex; flex-direction: column; min-height: 690px; }
+      .rail-head { display: flex; justify-content: space-between; align-items: center; padding: 4px 5px 16px; }
+      .rail-count { font-size: 12px; color: var(--lime); font-weight: 760; }
+      .rail-list { display: grid; gap: 7px; }
+      .case-tab { border: 1px solid transparent; color: var(--muted); background: transparent; text-align: left; padding: 12px 10px; border-radius: 14px; transition: .2s ease; }
+      .case-tab:hover { border-color: var(--line); color: var(--ink); background: rgba(255,255,255,.025); }
+      .case-tab.active { background: var(--panel-2); border-color: var(--line-strong); color: var(--ink); }
+      .case-tab .case-id { display: block; font-size: 12px; color: var(--faint); margin-bottom: 4px; }
+      .case-tab strong { display: block; font-size: 14px; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .case-tab small { display: block; color: var(--muted); font-size: 12px; margin-top: 5px; }
+      .case-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 7px; background: var(--orange); }
+      .case-dot.low { background: var(--cyan); }
+      .rail-foot { margin-top: auto; border-top: 1px solid var(--line); padding: 18px 5px 3px; color: var(--faint); font-size: 12px; }
+      .rail-foot b { color: var(--muted); font-weight: 600; }
+
+      .decision { border-radius: var(--radius); padding: 27px 30px 25px; position: relative; overflow: hidden; }
+      .decision::before { content: ""; position: absolute; width: 330px; height: 330px; right: -150px; top: -165px; border-radius: 50%; border: 1px solid rgba(126,215,255,.18); box-shadow: 0 0 0 24px rgba(126,215,255,.025), 0 0 0 50px rgba(126,215,255,.018); pointer-events: none; }
+      .decision-top { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; margin-bottom: 25px; }
+      .signal-label { color: var(--lime); font-weight: 730; letter-spacing: .12em; text-transform: uppercase; font-size: 11px; }
+      .signal-id { color: var(--muted); font-size: 13px; margin-top: 7px; }
+      .status-chip { border: 1px solid rgba(200,245,106,.3); background: rgba(200,245,106,.08); color: var(--lime); border-radius: 999px; padding: 7px 10px; font-size: 12px; white-space: nowrap; }
+      .status-chip::before { content: "✦"; margin-right: 6px; }
+      .person { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
+      .avatar { width: 48px; height: 48px; border-radius: 16px; display: grid; place-items: center; background: linear-gradient(135deg, #22556c, #172b48); color: var(--cyan); font-weight: 800; font-size: 17px; }
+      .person strong { display: block; font-size: 18px; letter-spacing: -.02em; }
+      .person span { color: var(--muted); font-size: 13px; }
+      .quote { border-left: 2px solid rgba(126,215,255,.65); color: #d9e2ea; background: rgba(126,215,255,.045); border-radius: 0 13px 13px 0; padding: 15px 18px; line-height: 1.6; margin-bottom: 27px; }
+      .quote mark { background: transparent; color: var(--cyan); }
+      .inference-grid { display: grid; grid-template-columns: 1fr 172px; gap: 20px; align-items: end; margin-bottom: 23px; }
+      .tiny-label { color: var(--faint); margin-bottom: 8px; display: block; }
+      .intent-name { font-size: 29px; line-height: 1.05; letter-spacing: -.045em; font-weight: 710; margin: 0; }
+      .intent-sub { color: var(--muted); font-size: 13px; margin-top: 8px; }
+      .confidence { border-left: 1px solid var(--line); padding-left: 18px; }
+      .confidence-num { font-size: 33px; letter-spacing: -.06em; color: var(--lime); line-height: 1; font-weight: 720; }
+      .confidence-bar { height: 6px; background: #263243; border-radius: 999px; overflow: hidden; margin-top: 10px; }
+      .confidence-bar i { display: block; width: 86%; height: 100%; border-radius: inherit; background: var(--lime); transition: width .35s ease; }
+      .confidence small { color: var(--muted); font-size: 12px; display: block; margin-top: 7px; }
+      .evidence { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 26px; }
+      .evidence span { border: 1px solid var(--line); background: rgba(255,255,255,.025); border-radius: 999px; color: #bcc7d2; font-size: 12px; padding: 7px 10px; }
+      .evidence span::before { content: "↗"; color: var(--cyan); margin-right: 6px; }
+      .action-band { border: 1px solid rgba(200,245,106,.24); background: linear-gradient(110deg, rgba(200,245,106,.09), rgba(200,245,106,.025)); border-radius: 17px; padding: 17px; display: flex; gap: 16px; justify-content: space-between; align-items: center; }
+      .action-band .tiny-label { color: rgba(200,245,106,.75); margin-bottom: 5px; }
+      .action-copy { font-size: 16px; font-weight: 650; }
+      .action-copy small { display: block; font-size: 12px; color: var(--muted); font-weight: 450; margin-top: 3px; }
+      .action-buttons { display: flex; gap: 8px; flex-shrink: 0; }
+      .btn { border: 1px solid var(--line-strong); border-radius: 12px; background: rgba(255,255,255,.04); color: var(--ink); padding: 10px 13px; font-weight: 700; font-size: 13px; transition: .2s ease; }
+      .btn:hover { background: rgba(255,255,255,.1); transform: translateY(-1px); }
+      .btn.primary { color: #14200b; border-color: var(--lime); background: var(--lime); }
+      .btn.primary:hover { background: #d8ff87; }
+      .btn.ghost { color: var(--muted); }
+      .btn.tiny { padding: 8px 10px; font-size: 12px; }
+      .decision-bottom { display: flex; justify-content: space-between; align-items: center; gap: 12px; border-top: 1px solid var(--line); margin-top: 25px; padding-top: 16px; color: var(--faint); font-size: 12px; }
+      .decision-bottom b { color: var(--muted); font-weight: 600; }
+      .hash { font-variant-numeric: tabular-nums; }
+
+      .why { border-radius: var(--radius); padding: 21px 19px; display: flex; flex-direction: column; min-height: 690px; }
+      .panel-title { font-size: 14px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); font-weight: 760; }
+      .why-intro { color: #c5ced8; font-size: 14px; margin: 17px 0 23px; line-height: 1.55; }
+      .trace { display: grid; gap: 0; position: relative; }
+      .trace::before { content: ""; position: absolute; left: 8px; top: 11px; bottom: 11px; width: 1px; background: var(--line-strong); }
+      .trace-row { display: grid; grid-template-columns: 17px 1fr; gap: 10px; position: relative; padding-bottom: 19px; }
+      .trace-row:last-child { padding-bottom: 0; }
+      .trace-dot { width: 17px; height: 17px; border-radius: 50%; border: 4px solid var(--panel); background: var(--cyan); box-shadow: 0 0 0 1px var(--cyan); z-index: 1; }
+      .trace-dot.lime { background: var(--lime); box-shadow: 0 0 0 1px var(--lime); }
+      .trace-dot.orange { background: var(--orange); box-shadow: 0 0 0 1px var(--orange); }
+      .trace-row strong { font-size: 13px; display: block; margin-top: -2px; }
+      .trace-row span { display: block; color: var(--muted); font-size: 12px; margin-top: 4px; }
+      .rule { border-top: 1px solid var(--line); margin: 22px 0 19px; }
+      .rule-box { border: 1px solid var(--line); border-radius: 14px; padding: 12px; background: rgba(255,255,255,.02); }
+      .rule-box strong { font-size: 13px; display: block; color: var(--lime); margin-bottom: 4px; }
+      .rule-box span { color: var(--muted); font-size: 12px; line-height: 1.45; display: block; }
+      .why-foot { margin-top: auto; border-top: 1px solid var(--line); padding-top: 15px; font-size: 12px; color: var(--faint); }
+      .why-foot b { color: var(--cyan); }
+
+      .section { margin-top: 16px; }
+      .replace { border-radius: var(--radius); padding: 25px 27px 27px; }
+      .section-head { display: flex; justify-content: space-between; align-items: end; gap: 22px; margin-bottom: 18px; }
+      .section-head h2 { font-size: 23px; letter-spacing: -.035em; margin: 6px 0 0; }
+      .section-head p { color: var(--muted); margin: 0; max-width: 490px; font-size: 13px; }
+      .compare { display: grid; grid-template-columns: 1fr 1.08fr 1fr; gap: 11px; align-items: stretch; }
+      .compare-card { border: 1px solid var(--line); border-radius: 16px; padding: 15px; min-height: 168px; background: #0e1724; }
+      .compare-card.cue { border-color: rgba(200,245,106,.3); background: linear-gradient(145deg, rgba(200,245,106,.08), rgba(14,23,36,.9)); }
+      .compare-card h3 { margin: 0 0 12px; font-size: 13px; letter-spacing: .04em; }
+      .compare-card h3 span { color: var(--faint); font-size: 11px; text-transform: uppercase; letter-spacing: .12em; margin-left: 5px; }
+      .fake-table { display: grid; gap: 7px; }
+      .fake-row { display: grid; grid-template-columns: 1.15fr .85fr .45fr; gap: 5px; }
+      .fake-row i { height: 7px; border-radius: 3px; background: #2a3544; display: block; }
+      .fake-row i:nth-child(2) { background: #222e3d; }
+      .fake-row i:nth-child(3) { background: #334256; }
+      .fake-chat { border: 1px solid #293445; border-radius: 10px; padding: 10px; min-height: 105px; display: flex; flex-direction: column; justify-content: space-between; }
+      .bubble { background: #222e3d; border-radius: 9px; color: var(--muted); font-size: 11px; padding: 7px 9px; width: 90%; }
+      .bubble.user { align-self: end; width: 68%; background: #29415a; color: #b9d4e8; }
+      .cue-visual { display: grid; grid-template-columns: 38px 1fr; gap: 11px; align-items: center; }
+      .cue-glyph { width: 38px; height: 38px; border: 1px solid rgba(200,245,106,.45); border-radius: 13px; display: grid; place-items: center; color: var(--lime); font-size: 20px; }
+      .cue-visual strong { display: block; font-size: 14px; }
+      .cue-visual span { display: block; font-size: 12px; color: var(--muted); margin-top: 3px; }
+      .cue-action { border-top: 1px solid rgba(200,245,106,.16); margin-top: 14px; padding-top: 12px; color: var(--lime); font-size: 12px; }
+      .versus { display: grid; place-items: center; color: var(--faint); text-transform: uppercase; letter-spacing: .15em; font-size: 10px; }
+
+      .lower-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 16px; }
+      .architecture, .failure { border-radius: var(--radius); padding: 24px 27px; }
+      .architecture h2, .failure h2 { margin: 5px 0 8px; font-size: 22px; letter-spacing: -.035em; }
+      .architecture p, .failure p { color: var(--muted); font-size: 13px; margin: 0; }
+      .pipeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 20px; }
+      .pipe { position: relative; border: 1px solid var(--line); border-radius: 13px; padding: 12px 10px; min-height: 90px; background: rgba(255,255,255,.02); }
+      .pipe:not(:last-child)::after { content: "→"; position: absolute; right: -13px; top: 31px; color: var(--lime); z-index: 2; }
+      .pipe b { display: block; color: var(--cyan); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 8px; }
+      .pipe span { color: #c6d0da; font-size: 12px; line-height: 1.35; display: block; }
+      .failure { background: linear-gradient(145deg, rgba(255,127,136,.07), rgba(16,25,39,.9)); border-color: rgba(255,127,136,.24); }
+      .failure h2 { color: #ffd4d6; }
+      .failure p { line-height: 1.55; }
+      .failure-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+      .failure-state { font-size: 12px; color: var(--muted); }
+      .failure-state b { color: var(--orange); }
+
+      .toast { position: fixed; right: 24px; bottom: 24px; width: min(360px, calc(100% - 48px)); transform: translateY(18px); opacity: 0; pointer-events: none; border: 1px solid var(--line-strong); background: #172233; border-radius: 15px; padding: 13px 15px; box-shadow: var(--shadow); transition: .25s ease; z-index: 10; }
+      .toast.show { transform: translateY(0); opacity: 1; }
+      .toast strong { display: block; font-size: 13px; margin-bottom: 3px; }
+      .toast span { display: block; color: var(--muted); font-size: 12px; }
+      .overlay { position: fixed; inset: 0; display: grid; place-items: center; padding: 20px; background: rgba(4,8,14,.72); backdrop-filter: blur(8px); opacity: 0; pointer-events: none; transition: .2s ease; z-index: 9; }
+      .overlay.open { opacity: 1; pointer-events: auto; }
+      .modal { width: min(520px, 100%); border: 1px solid var(--line-strong); background: #121d2d; border-radius: 22px; padding: 23px; box-shadow: var(--shadow); }
+      .modal h2 { margin: 3px 0 8px; letter-spacing: -.04em; font-size: 25px; }
+      .modal p { color: var(--muted); font-size: 13px; margin: 0 0 19px; }
+      .candidate-list { display: grid; gap: 8px; }
+      .candidate { display: flex; justify-content: space-between; gap: 12px; align-items: center; border: 1px solid var(--line); background: rgba(255,255,255,.025); color: var(--ink); text-align: left; border-radius: 13px; padding: 12px; }
+      .candidate:hover { border-color: var(--cyan); background: rgba(126,215,255,.07); }
+      .candidate b { font-size: 13px; }
+      .candidate span { color: var(--muted); font-size: 12px; }
+      .modal-foot { display: flex; justify-content: flex-end; margin-top: 18px; }
+      .textarea-wrap { display: none; }
+      .textarea-wrap.open { display: block; }
+      textarea { width: 100%; min-height: 96px; resize: vertical; color: var(--ink); background: #0d1623; border: 1px solid var(--line-strong); border-radius: 13px; padding: 12px; margin: 8px 0 12px; }
+
+      @media (max-width: 1120px) {
+        .surface { grid-template-columns: 180px minmax(0, 1fr); }
+        .why { grid-column: 1 / -1; min-height: unset; }
+        .why .trace { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .why .trace::before { display: none; }
+        .why .trace-row { padding: 0; }
+        .why-foot { margin-top: 20px; }
+      }
+      @media (max-width: 820px) {
+        .shell { width: min(100% - 28px, 660px); padding-top: 18px; }
+        .topbar { margin-bottom: 32px; align-items: flex-start; }
+        .top-meta { gap: 6px; }
+        .pill { padding: 7px 8px; font-size: 10px; }
+        .intro { grid-template-columns: 1fr; gap: 21px; }
+        h1 { font-size: clamp(44px, 14vw, 70px); }
+        .intro-copy { font-size: 16px; }
+        .principle { justify-self: start; }
+        .surface { grid-template-columns: 1fr; }
+        .rail { min-height: unset; }
+        .rail-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .rail-foot { margin-top: 16px; }
+        .decision { padding: 22px 18px; }
+        .action-band { align-items: flex-start; flex-direction: column; }
+        .action-buttons { width: 100%; }
+        .action-buttons .btn { flex: 1; }
+        .inference-grid { grid-template-columns: 1fr; }
+        .confidence { border-left: 0; border-top: 1px solid var(--line); padding: 15px 0 0; }
+        .compare { grid-template-columns: 1fr; }
+        .versus { padding: 2px; }
+        .lower-grid { grid-template-columns: 1fr; }
+        .pipeline { grid-template-columns: repeat(2, 1fr); }
+        .pipe:nth-child(2)::after { display: none; }
+        .why .trace { grid-template-columns: 1fr; }
+        .why .trace-row { padding-bottom: 15px; }
+      }
+      @media (max-width: 460px) {
+        .brand { font-size: 11px; }
+        .top-meta .pill:first-child { display: none; }
+        .decision-top { flex-direction: column; }
+        .status-chip { align-self: flex-start; }
+        .pipeline { grid-template-columns: 1fr; }
+        .pipe:not(:last-child)::after { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div class="brand"><span class="brand-mark">↗</span><span>SHELFSIGNAL</span></div>
+        <div class="top-meta"><span class="pill">PHARMACY OPERATIONS</span><span class="pill">UCI ONLINE RETAIL · 541,909 ROWS</span><span class="pill live">LIVE REPLAY</span></div>
+      </header>
+
+      <section class="intro" aria-labelledby="title">
+        <div>
+          <div class="eyebrow">A post-chatbot interface for the next replenishment decision</div>
+          <h1 id="title">Don’t scan every SKU.<br /><em>Protect the shelf.</em></h1>
+          <p class="intro-copy">ShelfSignal watches demand, runway, open orders, and supplier constraints. It infers the exception, stages the safest purchase order, and asks an operations lead to approve one decision—not a dashboard, not a prompt.</p>
+        </div>
+        <div class="principle"><strong>One exception. One decision. One accountable action.</strong><span>Nothing is sent automatically. ShelfSignal can prepare work, but the human owns the commit.</span></div>
+      </section>
+
+      <section class="surface" aria-label="ShelfSignal decision surface">
+        <aside class="rail" aria-label="Inventory exceptions">
+          <div class="rail-head"><span class="eyebrow">NEXT EXCEPTION</span><span class="rail-count">04</span></div>
+          <div class="rail-list">
+            <button class="case-tab active" data-case="0"><span class="case-id"><i class="case-dot"></i>NOW · 2m ago</span><strong>Oral rehydration salts</strong><small>Stockout risk · 88%</small></button>
+            <button class="case-tab" data-case="1"><span class="case-id"><i class="case-dot"></i>4m ago</span><strong>Vitamin D3 1,000 IU</strong><small>Lead-time risk · 81%</small></button>
+            <button class="case-tab" data-case="2"><span class="case-id"><i class="case-dot low"></i>7m ago</span><strong>Baby wipes · sensitive</strong><small>Expiry risk · 92%</small></button>
+            <button class="case-tab" data-case="3"><span class="case-id"><i class="case-dot"></i>11m ago</span><strong>Saline nasal spray</strong><small>Demand spike · 77%</small></button>
+          </div>
+          <div class="rail-foot"><b>4 exceptions</b> collapsed into the next decision.<br />No sorting. No hunting.</div>
+        </aside>
+
+        <article class="decision" aria-live="polite">
+          <div class="decision-top"><div><div class="signal-label">SHELF / DECISION READY</div><div class="signal-id" id="signalId">Exception #S-1847 · detected 2 minutes ago</div></div><div class="status-chip" id="statusChip">ACTION STAGED · REVIEW</div></div>
+          <div class="person"><div class="avatar" id="avatar">B3</div><div><strong id="personName">Central branch · shelf 03</strong><span id="personMeta">Oral care & hydration · replenishment lane</span></div></div>
+          <div class="quote" id="quote">“Demand for <mark>Oral Rehydration Salts</mark> is accelerating. Four days of cover remain, but Supplier B now needs six days to deliver.”</div>
+          <div class="inference-grid"><div><span class="tiny-label">INFERRED OPERATIONAL INTENT</span><h2 class="intent-name" id="intentName">Protect availability</h2><div class="intent-sub" id="intentSub">Replenishment · stockout prevention · high shelf impact</div></div><div class="confidence"><span class="tiny-label">CONFIDENCE</span><div class="confidence-num" id="confidenceNum">88%</div><div class="confidence-bar"><i id="confidenceBar"></i></div><small id="confidenceSub">enough signal to prepare</small></div></div>
+          <div class="evidence" id="evidence"><span>4 days of cover</span><span>6-day supplier lead time</span><span>+31% 7-day demand</span></div>
+          <div class="action-band"><div><span class="tiny-label">PREPARED ACTION · HUMAN REVIEW</span><div class="action-copy" id="actionCopy">Stage PO · 24 units from Supplier B</div><small id="actionSub">Purchase order is ready; nothing has been sent.</small></div><div class="action-buttons"><button class="btn primary" id="approveBtn">Approve purchase order</button><button class="btn ghost" id="adjustBtn">Adjust inference</button></div></div>
+          <div class="decision-bottom"><span>intent engine <b>signal scoring · no API</b></span><span class="hash" id="caseHash">case hash · 3A7C…9D12</span></div>
+        </article>
+
+        <aside class="why" aria-label="Reasoning trace"><div class="panel-title">Why this surfaced</div><p class="why-intro">ShelfSignal ranks an exception by stockout cost, runway, supplier lead time, confidence, and actionability. It surfaces the smallest safe decision a manager can make next.</p><div class="trace" id="trace"><div class="trace-row"><i class="trace-dot"></i><div><strong>Incoming signal</strong><span>sales trend + on-hand + open PO</span></div></div><div class="trace-row"><i class="trace-dot"></i><div><strong>Intent inferred</strong><span>availability risk · 88% confidence</span></div></div><div class="trace-row"><i class="trace-dot lime"></i><div><strong>Action staged</strong><span>24-unit PO · Supplier B</span></div></div></div><div class="rule"></div><div class="rule-box"><strong>Autonomy boundary</strong><span>Prepare freely. Send only after a manager approves. Every purchase has an undo path.</span></div><div class="why-foot">Evidence is visible because <b>trust is part of the interface</b>.</div></aside>
+      </section>
+
+      <section class="section replace" aria-labelledby="replaceTitle"><div class="section-head"><div><div class="eyebrow">THE INTERFACE SHIFT</div><h2 id="replaceTitle">What this replaces</h2></div><p>Operations managers usually bounce between a spreadsheet/ERP grid and a blank chatbot prompt. ShelfSignal collapses both into an accountable replenishment decision.</p></div><div class="compare"><div class="compare-card"><h3>Inventory spreadsheet <span>before</span></h3><div class="fake-table" aria-hidden="true"><div class="fake-row"><i></i><i></i><i></i></div><div class="fake-row"><i></i><i></i><i></i></div><div class="fake-row"><i></i><i></i><i></i></div><div class="fake-row"><i></i><i></i><i></i></div><div class="fake-row"><i></i><i></i><i></i></div></div></div><div class="versus">instead of</div><div class="compare-card"><h3>Chatbot prompt <span>before</span></h3><div class="fake-chat" aria-hidden="true"><div class="bubble">How can I help you today?</div><div class="bubble user">Which SKUs should I reorder?</div></div></div><div class="versus">becomes</div><div class="compare-card cue"><h3>ShelfSignal <span>now</span></h3><div class="cue-visual"><div class="cue-glyph">↗</div><div><strong>Protect the next shelf</strong><span>Evidence + PO draft, ready for review.</span></div></div><div class="cue-action">Stage 24 units · approve / adjust</div></div></div></section>
+
+      <section class="section lower-grid"><article class="architecture"><div class="eyebrow">ARCHITECTURE SNAPSHOT</div><h2>From data to accountable action</h2><p>A small, inspectable loop replaces a large surface area.</p><div class="pipeline"><div class="pipe"><b>01 · DATA</b><span>Transactions, on-hand, open POs, lead times, expiry</span></div><div class="pipe"><b>02 · INTENT</b><span>Demand trend + runway + supplier constraints</span></div><div class="pipe"><b>03 · DECISION</b><span>Rank one exception and show the evidence</span></div><div class="pipe"><b>04 · ACTION</b><span>Stage a PO; manager commits or recovers</span></div></div></article><article class="failure"><div class="eyebrow">FAILURE TEST</div><h2>What if the guess is wrong?</h2><p>ShelfSignal never hides uncertainty. Mark the stock count stale or explain a promotion spike; the staged PO is canceled, re-planned, and shown for review.</p><div class="failure-actions"><button class="btn tiny" id="wrongGuessBtn">Simulate wrong context</button><span class="failure-state" id="failureState">recovery path: <b>ready to test</b></span></div></article></section>
+    </main>
+    <div class="toast" id="toast" role="status"><strong id="toastTitle">Action staged</strong><span id="toastText">Nothing has been sent.</span></div>
+    <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modal"><div class="eyebrow">RE-CALIBRATE THE SIGNAL</div><h2 id="modalTitle">Which context did we miss?</h2><p>Select the interpretation that best matches the evidence. The current purchase order will be canceled before a new plan is prepared.</p><div class="candidate-list"><button class="candidate" data-intent="current"><span><b>Demand is real</b><br /><span>keep the availability plan</span></span><span>88%</span></button><button class="candidate" data-intent="stale"><span><b>On-hand count is stale</b><br /><span>verify the shelf before buying</span></span><span>44%</span></button><button class="candidate" data-intent="promo"><span><b>Short promotion spike</b><br /><span>hold and watch the next sale</span></span><span>36%</span></button></div><div class="textarea-wrap" id="textareaWrap"><span class="tiny-label">OPTIONAL CORRECTION NOTE</span><textarea id="correctionNote" placeholder="What did ShelfSignal miss?"></textarea></div><div class="modal-foot"><button class="btn ghost" id="closeModal">Keep current plan</button></div></div></div>
+    <script>
+      const cases = [
+        { id: 'S-1847', time: '2 minutes ago', initials: 'B3', name: 'Central branch · shelf 03', meta: 'Oral care & hydration · replenishment lane', quote: '“Demand for Oral Rehydration Salts is accelerating. Four days of cover remain, but Supplier B now needs six days to deliver.”', intent: 'Protect availability', sub: 'Replenishment · stockout prevention · high shelf impact', confidence: 88, confidenceSub: 'enough signal to prepare', action: 'Stage PO · 24 units from Supplier B', actionSub: 'Purchase order is ready; nothing has been sent.', evidence: ['4 days of cover', '6-day supplier lead time', '+31% 7-day demand'], hash: '3A7C…9D12', trace: ['sales trend + on-hand + open PO', 'availability risk · 88% confidence', '24-unit PO · Supplier B'] },
+        { id: 'S-1839', time: '4 minutes ago', initials: 'B1', name: 'North branch · shelf 11', meta: 'Vitamins · replenishment lane', quote: '“Vitamin D3 is moving faster than its four-week baseline. Ten days of cover remain, and Supplier A is quoting a twelve-day lead time.”', intent: 'Protect availability', sub: 'Replenishment · lead-time risk · medium shelf impact', confidence: 81, confidenceSub: 'prepare, then verify', action: 'Stage PO · 18 units from Supplier A', actionSub: 'Purchase order is ready; supplier terms are not locked.', evidence: ['10 days of cover', '12-day supplier lead time', '+24% 14-day demand'], hash: '91D0…4B22', trace: ['sales trend + supplier quote', 'lead-time risk · 81% confidence', '18-unit PO staged'] },
+        { id: 'S-1826', time: '7 minutes ago', initials: 'B2', name: 'West branch · shelf 07', meta: 'Baby care · expiry lane', quote: '“Baby wipes have 46 days of cover, but two open cartons expire in 28 days. A transfer beats a new order.”', intent: 'Avoid expiry', sub: 'Inventory rotation · waste prevention · high margin impact', confidence: 92, confidenceSub: 'safe to prepare', action: 'Stage branch transfer · 12 cartons', actionSub: 'Transfer request is ready; no stock moved.', evidence: ['28-day expiry', '46-day cover', 'transfer available'], hash: 'E18B…A055', trace: ['expiry + on-hand + branch surplus', 'expiry risk · 92% confidence', '12-carton transfer staged'] },
+        { id: 'S-1814', time: '11 minutes ago', initials: 'B4', name: 'South branch · shelf 02', meta: 'Cold & allergy · replenishment lane', quote: '“Saline nasal spray sold 31% above baseline after a weather change. The spike may be temporary, so the system is holding a smaller order.”', intent: 'Test demand spike', sub: 'Replenishment · uncertainty gate · medium shelf impact', confidence: 77, confidenceSub: 'below auto-stage threshold', action: 'Stage PO · 8 units + watch next sale', actionSub: 'Small order is drafted; promotion/weather context needs review.', evidence: ['+31% 7-day demand', 'weather event', 'uncertain persistence'], hash: '6C41…F83E', trace: ['sales trend + weather signal', 'spike test · 77% confidence', 'small PO staged for review'] }
+      ];
+      const intentPrototypes = [
+        { key: 'availability', name: 'Protect availability', sub: 'Replenishment · stockout prevention · high shelf impact', anchors: ['demand', 'cover', 'lead time', 'moving', 'baseline', 'accelerating', 'sold', 'stockout', 'supplier'] },
+        { key: 'expiry', name: 'Avoid expiry', sub: 'Inventory rotation · waste prevention · high margin impact', anchors: ['expire', 'expiry', 'carton', 'transfer', 'waste', 'days of cover', 'surplus'] },
+        { key: 'spike', name: 'Test demand spike', sub: 'Replenishment · uncertainty gate · medium shelf impact', anchors: ['spike', 'temporary', 'weather', 'promotion', 'uncertain', 'persistence', 'above baseline'] }
+      ];
+      function inferIntent(c) {
+        const corpus = `${c.quote} ${c.evidence.join(' ')} ${c.sub}`.toLowerCase();
+        const ranked = intentPrototypes.map(p => ({ p, score: p.anchors.reduce((n, anchor) => n + (corpus.includes(anchor) ? (anchor.includes(' ') ? 2 : 1) : 0), 0) })).sort((a, b) => b.score - a.score);
+        const best = ranked[0]; const runnerUp = ranked[1];
+        const confidence = Math.max(54, Math.min(96, 62 + best.score * 4 + (best.score - runnerUp.score) * 3));
+        return { name: best.p.name, sub: best.p.sub, confidence, confidenceSub: confidence >= 80 ? 'enough signal to prepare' : 'below auto-stage threshold' };
+      }
+      const state = { current: 0, approved: false, wrong: false, toastTimer: null };
+      const $ = (id) => document.getElementById(id);
+      const els = { signalId: $('signalId'), avatar: $('avatar'), personName: $('personName'), personMeta: $('personMeta'), quote: $('quote'), intentName: $('intentName'), intentSub: $('intentSub'), confidenceNum: $('confidenceNum'), confidenceBar: $('confidenceBar'), confidenceSub: $('confidenceSub'), evidence: $('evidence'), actionCopy: $('actionCopy'), actionSub: $('actionSub'), caseHash: $('caseHash'), trace: $('trace'), statusChip: $('statusChip'), approveBtn: $('approveBtn'), toast: $('toast'), toastTitle: $('toastTitle'), toastText: $('toastText'), failureState: $('failureState') };
+      function showToast(title, text) { els.toastTitle.textContent = title; els.toastText.textContent = text; els.toast.classList.add('show'); clearTimeout(state.toastTimer); state.toastTimer = setTimeout(() => els.toast.classList.remove('show'), 3600); }
+      async function hashText(text) { try { const bytes = new TextEncoder().encode(text); const digest = await crypto.subtle.digest('SHA-256', bytes); return [...new Uint8Array(digest)].slice(0, 4).map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase(); } catch { return '3A7C'; } }
+      function setTrace(items, wrong) { els.trace.innerHTML = items.map((item, i) => `<div class="trace-row"><i class="trace-dot ${i === items.length - 1 ? (wrong ? 'orange' : 'lime') : ''}"></i><div><strong>${['Incoming signal', 'Intent inferred', wrong ? 'Recovery staged' : 'Action staged'][i] || 'Decision updated'}</strong><span>${item}</span></div></div>`).join(''); }
+      async function renderCase(index) { const c = cases[index]; const inferred = inferIntent(c); state.current = index; state.approved = false; state.wrong = false; document.querySelectorAll('.case-tab').forEach((tab, i) => tab.classList.toggle('active', i === index)); els.signalId.textContent = `Exception #${c.id} · detected ${c.time}`; els.avatar.textContent = c.initials; els.personName.textContent = c.name; els.personMeta.textContent = c.meta; els.quote.textContent = c.quote; els.intentName.textContent = inferred.name; els.intentSub.textContent = inferred.sub; els.confidenceNum.textContent = `${inferred.confidence}%`; els.confidenceBar.style.width = `${inferred.confidence}%`; els.confidenceSub.textContent = inferred.confidenceSub; els.evidence.innerHTML = c.evidence.map(e => `<span>${e}</span>`).join(''); els.actionCopy.textContent = c.action; els.actionSub.textContent = c.actionSub; els.caseHash.textContent = `case hash · ${c.hash}`; els.statusChip.textContent = 'ACTION STAGED · REVIEW'; els.approveBtn.textContent = 'Approve purchase order'; els.approveBtn.classList.add('primary'); setTrace([c.trace[0], `${inferred.name.toLowerCase()} · ${inferred.confidence}% confidence`, c.trace[2]], false); els.failureState.innerHTML = 'recovery path: <b>ready to test</b>'; const h = await hashText(c.id + c.quote); els.caseHash.textContent = `case hash · ${h.slice(0,4)}…${c.hash.split('…')[1]}`; }
+      function approve() { if (state.approved) return; state.approved = true; els.statusChip.textContent = 'COMMITTED · AUDIT LOGGED'; els.approveBtn.textContent = 'Purchase order approved ✓'; els.approveBtn.classList.remove('primary'); els.actionSub.textContent = 'Committed with manager approval · undo available for 30 seconds.'; showToast('Purchase order committed', 'The staged replenishment action was approved and added to the audit trail.'); }
+      function openAdjust() { $('overlay').classList.add('open'); }
+      function closeAdjust() { $('overlay').classList.remove('open'); }
+      function chooseIntent(kind) { if (kind === 'current') { closeAdjust(); showToast('Current plan kept', 'The replenishment draft is still waiting for review.'); return; } state.wrong = true; state.approved = false; const label = kind === 'stale' ? 'Verify on-hand count' : 'Test a short promotion spike'; const action = kind === 'stale' ? 'Hold PO · request shelf count + photo' : 'Hold full PO · stage 8-unit test order'; els.statusChip.textContent = 'RECOVERY READY · REVIEW'; els.intentName.textContent = label; els.intentSub.textContent = 'Correction recorded · previous PO canceled'; els.confidenceNum.textContent = kind === 'stale' ? '44%' : '36%'; els.confidenceBar.style.width = kind === 'stale' ? '44%' : '36%'; els.confidenceSub.textContent = 'below auto-stage threshold'; els.actionCopy.textContent = action; els.actionSub.textContent = 'Previous draft canceled. New plan requires an explicit review.'; els.approveBtn.textContent = 'Approve recovery'; els.approveBtn.classList.add('primary'); els.failureState.innerHTML = 'recovery path: <b>PO canceled · new plan staged</b>'; const c = cases[state.current]; setTrace([c.trace[0], `corrected to ${label} · manager input`, 'previous PO canceled · recovery staged'], true); closeAdjust(); showToast('Context corrected', 'The old purchase order was canceled before execution.'); }
+      document.querySelectorAll('.case-tab').forEach(tab => tab.addEventListener('click', () => renderCase(Number(tab.dataset.case))));
+      els.approveBtn.addEventListener('click', approve); $('adjustBtn').addEventListener('click', openAdjust); $('closeModal').addEventListener('click', closeAdjust); $('wrongGuessBtn').addEventListener('click', openAdjust); $('overlay').addEventListener('click', (e) => { if (e.target.id === 'overlay') closeAdjust(); }); document.querySelectorAll('.candidate').forEach(b => b.addEventListener('click', () => chooseIntent(b.dataset.intent)));
+      renderCase(0);
+    </script>
+  </body>
+</html>
