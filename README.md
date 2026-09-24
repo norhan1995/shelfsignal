@@ -1,5 +1,7 @@
 # ShelfSignal
 
+[![CI](https://github.com/norhan1995/shelfsignal/actions/workflows/verify.yml/badge.svg?branch=main)](https://github.com/norhan1995/shelfsignal/actions/workflows/verify.yml)
+
 ShelfSignal is an action-first AI interface for pharmacy and health-and-beauty replenishment. It replaces the morning spreadsheet/ERP scan and the blank “which SKUs should I reorder?” chatbot prompt with one ranked exception and one accountable next decision.
 
 Open the live demo: **https://shelfsignal.nrifaie77.chatgpt.site**
